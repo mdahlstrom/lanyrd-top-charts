@@ -3,6 +3,8 @@ lanyrd top charts
 
 this is a small greasemonkey script for the lanyrd.com site, it collectes which of your conferences the people you follow on twitter are planning on attending and collects a top three chart of the busiest conferences goers you follow and which conference they are attending.
 
+Using processing.js to render graphs, work in progress for the moment.
+
 installation
 ---------------------
 

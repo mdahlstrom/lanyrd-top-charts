@@ -87,6 +87,19 @@ html = "<li>"
 html += "<a href='#lanyrd-top-attenders'>Your top 3 goers</a>"
 html += "<div id='lanyrd-top-attenders' style='float:right;'>";
 html += "<canvas id='top-attender-canvas' style='width:100px;height:100px;'></canvas>"
+html += "<table>"
+for(i=0;i<3;i++) {
+	key = top_attender.keys[i];
+	array = top_attender[key];
+	if(key != null && array != null) {
+		html += "<tr>";
+		html +=	"<td>";
+		html += '<a class="lanyrd-top-attender" href="#">' + key + "</a></td>";
+		html +=	"<td>" + array.length + "</td>";
+		html += "</tr>";
+	}
+}
+html += "</table"
 html += "</div>"
 html += "</li>"
 
