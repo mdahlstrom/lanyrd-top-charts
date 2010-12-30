@@ -3,7 +3,6 @@
 // @namespace http://flabbergasted.me/greasemonkey/
 // @description	king of the hill conference goers in your twitter streams
 // @require       http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
-// @require       http://processingjs.org/content/download/processing-js-1.0.0/processing-1.0.0.min.js
 // @include	http://lanyrd.com/
 // ==/UserScript==
 //make sure there is a console.log writer available
@@ -21,42 +20,6 @@ function compareArrays ( aKey, bKey )
   if ( a.length < b.length )
     return 1;
   return 0; // a == b
-}
-
-//processing.js function to draw the top-attender graph
-function sketchTopAttender(processing) {
-	var centerX = processing.width / 2, centerY = processing.height / 2;  
-	var radius = Math.min(processing.width, processing.height) * 0.95;
-	var topAttenderTableData = new Array();
-	
-	processing.setup = function() {	
-		total_attenders = 0;
-		for(i=0;i<top_attender.keys.length;i++) {
-			key = top_attender.keys[i];
-			total_attenders += top_attender[key].length;
-		}
-		var degressPerVisit = 360 / total_attenders;
-		topAttenderTableData.push(0);
-		for(i=0;i<top_attender.keys.length;i++) {
-			key = top_attender.keys[i];
-			topAttenderTableData.push( top_attender[key].length * degressPerVisit);
-		}
-	}
-	
-	processing.draw = function() { 
-		// erase background  
-		processing.background(140);
-		processing.noStroke();
-		from = processing.color(200, 40, 40);
-		to = processing.color(40, 40, 200);
-		lerpInc = 1.0 / topAttenderTableData.length;
-		for(i=0;i<topAttenderTableData.length;i++) {
-			begin = topAttenderTableData[i];
-			end = topAttenderTableData[i+1] || 360;
-			processing.fill( processing.lerpColor(from, to, lerpInc*i) );
-			processing.arc(centerX,centerY,radius,radius, begin , end);
-		}
-	}
 }
 
 //create a small datastructure for keys and array
@@ -84,22 +47,35 @@ top_attender.keys.sort(compareArrays);
 
 //put together a li element with a anchor tag and a table that represents the top 3 conference goers you follow on twitter
 html = "<li>"
-html += "<a href='#lanyrd-top-attenders'>Your top 3 goers</a>"
-html += "<div id='lanyrd-top-attenders' style='float:right;'>";
-html += "<canvas id='top-attender-canvas' style='width:100px;height:100px;'></canvas>"
-html += "<table>"
-for(i=0;i<3;i++) {
+html += "<a href='#lanyrd-top-attenders'>Top 3 tweeters</a>"
+html += "<div id='lanyrd-top-attenders' style='float:right;width:250px;height:100px;'>";
+html += "<image src='https://chart.googleapis.com/chart?cht=p&chs=250x100&"
+dataset = "chd=t:"
+labels = "chdl="
+counter = 0
+if(top_attender.keys.length > 5){
+	counter = 4
+}else {
+	counter = top_attender.keys.length - 1
+}
+for(i=0;i<counter;i++) {
 	key = top_attender.keys[i];
 	array = top_attender[key];
 	if(key != null && array != null) {
-		html += "<tr>";
-		html +=	"<td>";
-		html += '<a class="lanyrd-top-attender" href="#">' + key + "</a></td>";
-		html +=	"<td>" + array.length + "</td>";
-		html += "</tr>";
+		dataset += array.length + ","
+		labels += key + "|"
 	}
 }
-html += "</table"
+key = top_attender.keys[counter];
+array = top_attender[key];
+dataset += array.length
+labels += key
+dataset += "&"
+html += dataset
+html += labels
+html += "&chf=bg,s,00000000"
+html += "&chco=112644"
+html += "' />"
 html += "</div>"
 html += "</li>"
 
@@ -107,15 +83,12 @@ html += "</li>"
 $(".navigation.section > .article > .inner > .nav").append(html);
 $("#lanyrd-top-attenders").hide();
 
-//create the processing sketch
-var topAttenderCanvas = document.getElementById("top-attender-canvas");  
-var topAttenderInstance = new Processing(topAttenderCanvas, sketchTopAttender);
-
 //when the menu option is pressed hide or show the top three table
 $("a[href=#lanyrd-top-attenders]").click(function(e){
 	$("#lanyrd-top-attenders").toggle();
 	e.preventDefault();
 });
+
 
 //just throw up a alert dialog with which conferences the twitter id is attending
 $("a.lanyrd-top-attender").click(function(e){
